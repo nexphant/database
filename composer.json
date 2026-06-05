@@ -10,7 +10,9 @@
     },
     "require": {
         "php": ">=8.1",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "nexph/core": "^0.1",
+        "nexph/support": "^0.1"
     },
     "suggest": {
         "ext-mysqli": "For native MySQL async driver",
@@ -21,3 +23,4 @@
         "ext-redis": "For Redis cache driver"
     }
 }
+
