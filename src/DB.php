@@ -201,6 +201,16 @@ class DB
         return (new QueryBuilder($table))->connection($connection);
     }
 
+    public static function raw(string $sql, array $params = [], string $connection = 'default'): mixed
+    {
+        return self::query($sql, $params, $connection);
+    }
+
+    public static function schema(string $connection = 'default'): Schema
+    {
+        return new Schema($connection);
+    }
+
     public static function poolStats(?string $name = null): array
     {
         return PoolManager::stats($name);
