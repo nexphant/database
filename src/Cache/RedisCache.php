@@ -22,8 +22,8 @@ class RedisCache
         }
         
         // Track Redis connection
-        if (class_exists('\Nexph\Runtime\Resource\ResourceRegistry') && class_exists('\Nexph\Runtime\Runtime') && \Nexph\Runtime\Runtime::available()) {
-            \Nexph\Runtime\Resource\ResourceRegistry::instance()->track(
+        if (class_exists('\Nexph\Core\Resource\ResourceRegistry') && class_exists('\Nexph\Runtime\Runtime') && \Nexph\Runtime\Runtime::available()) {
+            \Nexph\Core\Resource\ResourceRegistry::instance()->track(
                 $this->redis,
                 'redis_connection',
                 \Nexph\Runtime\Runtime::context()->ownerId()
