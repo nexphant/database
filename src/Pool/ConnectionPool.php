@@ -208,8 +208,8 @@ class ConnectionPool
         $this->active[spl_object_id($conn)] = $entry;
         
         // Track connection with resource registry
-        if (class_exists('\Nexph\Runtime\Resource\ResourceRegistry') && class_exists('\Nexph\Runtime\Runtime') && \Nexph\Runtime\Runtime::available()) {
-            \Nexph\Runtime\Resource\ResourceRegistry::instance()->track(
+        if (class_exists('\Nexph\Core\Resource\ResourceRegistry') && class_exists('\Nexph\Runtime\Runtime') && \Nexph\Runtime\Runtime::available()) {
+            \Nexph\Core\Resource\ResourceRegistry::instance()->track(
                 $conn,
                 'db_connection',
                 \Nexph\Runtime\Runtime::context()->ownerId()
