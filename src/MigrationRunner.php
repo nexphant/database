@@ -3,23 +3,26 @@
 /**
  * This file is part of the Nexph Framework.
  *
- * (c) Nexphlabs <https://github.com/nexphlabs>
+ * (c) nexphant <https://github.com/nexphant>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 namespace Nexph\Database;
 
-class MigrationRunner {
+class MigrationRunner
+{
     private string $path;
     private string $table = 'migrations';
 
-    public function __construct(string $path) {
+    public function __construct(string $path)
+    {
         $this->path = $path;
         $this->ensureTable();
     }
 
-    private function ensureTable(): void {
+    private function ensureTable(): void
+    {
         DB::execute("CREATE TABLE IF NOT EXISTS {$this->table} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             migration VARCHAR(255) NOT NULL,
@@ -28,7 +31,8 @@ class MigrationRunner {
         )");
     }
 
-    public function up(?int $steps = null): array {
+    public function up(?int $steps = null): array
+    {
         $pending = $this->pending();
         if (empty($pending)) {
             return ['message' => 'Nothing to migrate'];
@@ -57,7 +61,8 @@ class MigrationRunner {
         return ['migrated' => $migrated, 'batch' => $batch];
     }
 
-    public function down(?int $steps = 1): array {
+    public function down(?int $steps = 1): array
+    {
         $ran = $this->ran();
         if (empty($ran)) {
             return ['message' => 'Nothing to rollback'];
@@ -69,7 +74,8 @@ class MigrationRunner {
         DB::transaction(function () use ($toRollback, &$rolledBack): void {
             foreach ($toRollback as $name) {
                 $file = $this->path . '/' . $name . '.php';
-                if (!file_exists($file)) continue;
+                if (!file_exists($file))
+                    continue;
 
                 $migration = require $file;
                 if (isset($migration['down']) && is_callable($migration['down'])) {
@@ -84,17 +90,20 @@ class MigrationRunner {
         return ['rolled_back' => $rolledBack];
     }
 
-    public function reset(): array {
+    public function reset(): array
+    {
         return $this->down(count($this->ran()));
     }
 
-    public function refresh(): array {
+    public function refresh(): array
+    {
         $reset = $this->reset();
         $up = $this->up();
         return ['reset' => $reset, 'migrated' => $up];
     }
 
-    public function status(): array {
+    public function status(): array
+    {
         $ran = $this->ran();
         $all = $this->all();
         $pending = array_diff($all, $ran);
@@ -106,7 +115,8 @@ class MigrationRunner {
         ];
     }
 
-    public function pending(): array {
+    public function pending(): array
+    {
         $ran = $this->ran();
         $files = glob($this->path . '/*.php') ?: [];
         sort($files);
@@ -116,22 +126,26 @@ class MigrationRunner {
         });
     }
 
-    private function ran(): array {
+    private function ran(): array
+    {
         $result = DB::query("SELECT migration FROM {$this->table} ORDER BY id");
         return array_column($result, 'migration');
     }
 
-    private function all(): array {
+    private function all(): array
+    {
         $files = glob($this->path . '/*.php') ?: [];
         return array_map(fn($f) => basename($f, '.php'), $files);
     }
 
-    private function nextBatch(): int {
+    private function nextBatch(): int
+    {
         $result = DB::query("SELECT MAX(batch) as batch FROM {$this->table}");
         return ($result[0]['batch'] ?? 0) + 1;
     }
 
-    public function create(string $name): string {
+    public function create(string $name): string
+    {
         $timestamp = date('Y_m_d_His');
         $filename = "{$timestamp}_{$name}.php";
         $filepath = $this->path . '/' . $filename;
@@ -142,7 +156,7 @@ class MigrationRunner {
 /**
  * This file is part of the Nexph Framework.
  *
- * (c) Nexphlabs <https://github.com/nexphlabs>
+ * (c) nexphant <https://github.com/nexphant>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.

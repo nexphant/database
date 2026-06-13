@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nexph Framework.
  *
- * (c) Nexphlabs <https://github.com/nexphlabs>
+ * (c) nexphant <https://github.com/nexphant>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -222,7 +222,8 @@ class QueryBuilder
 
     public function bulkInsert(array $rows): int
     {
-        if (empty($rows)) return 0;
+        if (empty($rows))
+            return 0;
         $columns = array_keys($rows[0]);
         $colCount = count($columns);
         $rowPlaceholder = '(' . implode(', ', array_fill(0, $colCount, '?')) . ')';

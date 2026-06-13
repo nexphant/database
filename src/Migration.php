@@ -3,7 +3,7 @@
 /**
  * This file is part of the Nexph Framework.
  *
- * (c) Nexphlabs <https://github.com/nexphlabs>
+ * (c) nexphant <https://github.com/nexphant>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -12,19 +12,23 @@ namespace Nexph\Database;
 
 use Nexph\Database\DB;
 
-class Migration {
-    private static function validate(string $name): string {
+class Migration
+{
+    private static function validate(string $name): string
+    {
         if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name)) {
             throw new \Exception("Invalid identifier: $name");
         }
         return $name;
     }
 
-    private static function quote(string $name): string {
+    private static function quote(string $name): string
+    {
         return "`$name`"; // Simplified for MySQL/SQLite
     }
 
-    public static function sync(array $meta): void {
+    public static function sync(array $meta): void
+    {
         $table = self::validate($meta['table']);
         $fields = $meta['fields'];
         $indexes = $meta['indexes'] ?? [];
@@ -44,23 +48,27 @@ class Migration {
         }
 
         foreach ($fields as $field) {
-            if (empty(trim($field['name']))) continue;
-            
+            if (empty(trim($field['name'])))
+                continue;
+
             $name = self::validate($field['name']);
             $sqlType = self::getSqlType($field['type'] ?? 'TEXT', $field['length'] ?? '');
             $col = "`{$name}` {$sqlType}";
-            
+
             $isPk = !empty($field['primary']);
             $isAi = !empty($field['autoincrement']);
 
-            if ($isPk) $col .= ' PRIMARY KEY';
-            if ($isAi && in_array(strtoupper($field['type'] ?? ''), ['INTEGER','BIGINT','SMALLINT','TINYINT']) && $isPk) {
+            if ($isPk)
+                $col .= ' PRIMARY KEY';
+            if ($isAi && in_array(strtoupper($field['type'] ?? ''), ['INTEGER', 'BIGINT', 'SMALLINT', 'TINYINT']) && $isPk) {
                 $col .= ' AUTOINCREMENT';
             }
 
-            if (empty($field['nullable'])) $col .= ' NOT NULL';
-            if (!empty($field['unique']) && !$isPk) $col .= ' UNIQUE';
-            
+            if (empty($field['nullable']))
+                $col .= ' NOT NULL';
+            if (!empty($field['unique']) && !$isPk)
+                $col .= ' UNIQUE';
+
             if (isset($field['default']) && $field['default'] !== '') {
                 $def = $field['default'];
                 $upperDef = strtoupper($def);
@@ -88,7 +96,7 @@ class Migration {
         }
 
         $allDefinitions = array_merge($columns, $foreignKeys);
-        
+
         try {
             $dbFields = DB::query("PRAGMA table_info(`{$table}`)");
             $exists = !empty($dbFields);
@@ -99,7 +107,7 @@ class Migration {
         if (!$exists) {
             $sql = "CREATE TABLE IF NOT EXISTS `{$table}` (" . implode(', ', $allDefinitions) . ")";
             DB::query($sql);
-            
+
             foreach ($indexes as $index) {
                 $indexName = self::validate($index['name']);
                 $indexCols = array_map(fn($c) => "`" . self::validate($c) . "`", $index['columns']);
@@ -114,25 +122,26 @@ class Migration {
                 try {
                     DB::query("PRAGMA foreign_keys = OFF");
                     DB::query("BEGIN TRANSACTION");
-                    
+
                     $tempTable = "{$table}_old_" . time();
                     DB::query("ALTER TABLE `{$table}` RENAME TO `{$tempTable}`");
-                    
+
                     $createSql = "CREATE TABLE `{$table}` (" . implode(', ', $allDefinitions) . ")";
                     DB::query($createSql);
-                    
+
                     $dbFields = DB::query("PRAGMA table_info(`{$tempTable}`)");
                     $oldCols = array_map(fn($f) => "`{$f['name']}`", $dbFields);
                     $newCols = [];
                     $metaCols = array_map(fn($f) => $f['name'], $meta['fields']);
-                    if (!$hasId) $metaCols[] = 'id';
-                    
+                    if (!$hasId)
+                        $metaCols[] = 'id';
+
                     foreach ($dbFields as $f) {
                         if (in_array($f['name'], $metaCols)) {
                             $newCols[] = "`{$f['name']}`";
                         }
                     }
-                    
+
                     if (!empty($newCols)) {
                         $colsStr = implode(', ', $newCols);
                         $selectCols = [];
@@ -174,11 +183,11 @@ class Migration {
                         $selectStr = implode(', ', $selectCols);
                         DB::query("INSERT INTO `{$table}` ({$colsStr}) SELECT {$selectStr} FROM `{$tempTable}`");
                     }
-                    
+
                     DB::query("DROP TABLE `{$tempTable}`");
                     DB::query("COMMIT");
                     DB::query("PRAGMA foreign_keys = ON");
-                    
+
                     foreach ($indexes as $index) {
                         $indexName = self::validate($index['name']);
                         $indexCols = array_map(fn($c) => "`" . self::validate($c) . "`", $index['columns']);
@@ -198,38 +207,47 @@ class Migration {
         }
     }
 
-    public static function isSynced(string $table, array $meta): bool {
+    public static function isSynced(string $table, array $meta): bool
+    {
         try {
             $dbFields = DB::query("PRAGMA table_info(`{$table}`)");
-            if (empty($dbFields)) return false;
-            
+            if (empty($dbFields))
+                return false;
+
             $dbFieldMap = [];
             foreach ($dbFields as $f) {
                 $dbFieldMap[$f['name']] = [
                     'type' => strtoupper($f['type']),
-                    'notnull' => (bool)$f['notnull']
+                    'notnull' => (bool) $f['notnull']
                 ];
             }
 
             $hasIdMeta = false;
             foreach ($meta['fields'] as $field) {
                 $name = $field['name'];
-                if (empty($name)) continue;
-                if ($name === 'id') $hasIdMeta = true;
+                if (empty($name))
+                    continue;
+                if ($name === 'id')
+                    $hasIdMeta = true;
 
-                if (!isset($dbFieldMap[$name])) return false;
-                
+                if (!isset($dbFieldMap[$name]))
+                    return false;
+
                 $expectedType = self::getSqlType($field['type'] ?? 'TEXT', $field['length'] ?? '');
-                if ($dbFieldMap[$name]['type'] !== $expectedType) return false;
-                
+                if ($dbFieldMap[$name]['type'] !== $expectedType)
+                    return false;
+
                 $expectedNotNull = empty($field['nullable']);
-                if ($dbFieldMap[$name]['notnull'] !== $expectedNotNull) return false;
+                if ($dbFieldMap[$name]['notnull'] !== $expectedNotNull)
+                    return false;
             }
 
             // Migration::sync always ensures an 'id' column exists with type INTEGER if not specified
             if (!$hasIdMeta) {
-                if (!isset($dbFieldMap['id'])) return false;
-                if ($dbFieldMap['id']['type'] !== 'INTEGER') return false;
+                if (!isset($dbFieldMap['id']))
+                    return false;
+                if ($dbFieldMap['id']['type'] !== 'INTEGER')
+                    return false;
             }
 
             return true;
@@ -238,14 +256,15 @@ class Migration {
         }
     }
 
-    private static function getSqlType(string $type, string $length = ''): string {
+    private static function getSqlType(string $type, string $length = ''): string
+    {
         $type = strtoupper($type);
         return match ($type) {
-            'VARCHAR' => $length ? "VARCHAR(" . (int)$length . ")" : 'VARCHAR(255)',
-            'CHAR' => $length ? "CHAR(" . (int)$length . ")" : 'CHAR(1)',
+            'VARCHAR' => $length ? "VARCHAR(" . (int) $length . ")" : 'VARCHAR(255)',
+            'CHAR' => $length ? "CHAR(" . (int) $length . ")" : 'CHAR(1)',
             'DECIMAL' => $length ? "DECIMAL(" . str_replace(' ', '', $length) . ")" : 'DECIMAL(10,2)',
-            'INTEGER','BIGINT','SMALLINT','TINYINT' => 'INTEGER',
-            'REAL','FLOAT','DOUBLE' => 'REAL',
+            'INTEGER', 'BIGINT', 'SMALLINT', 'TINYINT' => 'INTEGER',
+            'REAL', 'FLOAT', 'DOUBLE' => 'REAL',
             'BOOLEAN' => 'INTEGER',
             'DATE' => 'DATE',
             'DATETIME' => 'DATETIME',
