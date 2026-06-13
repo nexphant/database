@@ -39,6 +39,11 @@ class PgsqlDriver implements AsyncDriverInterface
             'port=' . (int) ($config['port'] ?? 5432),
             'dbname=' . ($config['database'] ?? ''),
         ];
+        foreach (['connect_timeout', 'application_name', 'sslmode'] as $key) {
+            if (isset($config[$key])) {
+                $parts[] = $key . '=' . $config[$key];
+            }
+        }
         if (isset($config['username'])) {
             $parts[] = 'user=' . $config['username'];
         }
@@ -50,6 +55,8 @@ class PgsqlDriver implements AsyncDriverInterface
             throw new \RuntimeException('PostgreSQL connection failed');
         }
         $this->preparedCacheSize = max(0, (int) ($config['statement_cache_size'] ?? 128));
+        $this->configureSession($config);
+        $this->runAfterConnect($config);
     }
 
     public function attachLoop(object $loop): void
@@ -264,6 +271,34 @@ class PgsqlDriver implements AsyncDriverInterface
         }
 
         return $name;
+    }
+
+    private function configureSession(array $config): void
+    {
+        foreach (($config['init_commands'] ?? $config['pgsql_init_commands'] ?? []) as $sql) {
+            pg_query($this->connection(), (string) $sql);
+        }
+        foreach (($config['session'] ?? $config['pgsql_session'] ?? []) as $name => $value) {
+            pg_query($this->connection(), 'SET ' . $name . ' = ' . $this->sqlValue($value));
+        }
+    }
+
+    private function sqlValue(mixed $value): string
+    {
+        if (is_bool($value)) {
+            return $value ? 'on' : 'off';
+        }
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+        return "'" . pg_escape_string($this->connection(), (string) $value) . "'";
+    }
+
+    private function runAfterConnect(array $config): void
+    {
+        if (($config['after_connect'] ?? null) !== null) {
+            ($config['after_connect'])($this->connection(), $config);
+        }
     }
 
     /** @return resource */

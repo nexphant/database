@@ -35,6 +35,9 @@ class MysqliDriver implements AsyncDriverInterface
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
         $this->db = mysqli_init();
         $this->db->options(MYSQLI_OPT_CONNECT_TIMEOUT, max(1, (int) ($config['connect_timeout'] ?? 5)));
+        foreach (($config['mysqli_options'] ?? []) as $option => $value) {
+            $this->db->options((int) $option, $value);
+        }
         $this->db->real_connect(
             $config['host'] ?? '127.0.0.1',
             $config['username'] ?? null,
@@ -44,6 +47,8 @@ class MysqliDriver implements AsyncDriverInterface
         );
         $this->db->set_charset($config['charset'] ?? 'utf8mb4');
         $this->statementCacheSize = max(0, (int) ($config['statement_cache_size'] ?? 128));
+        $this->configureSession($config);
+        $this->runAfterConnect($config);
     }
 
     public function attachLoop(object $loop): void
@@ -216,6 +221,34 @@ class MysqliDriver implements AsyncDriverInterface
             throw new \RuntimeException('Database not connected');
         }
         return $this->db;
+    }
+
+    private function configureSession(array $config): void
+    {
+        foreach (($config['init_commands'] ?? $config['mysql_init_commands'] ?? []) as $sql) {
+            $this->connection()->query((string) $sql);
+        }
+        foreach (($config['session'] ?? $config['mysql_session'] ?? []) as $name => $value) {
+            $this->connection()->query('SET SESSION ' . $name . ' = ' . $this->sqlValue($value));
+        }
+    }
+
+    private function sqlValue(mixed $value): string
+    {
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+        return "'" . $this->connection()->real_escape_string((string) $value) . "'";
+    }
+
+    private function runAfterConnect(array $config): void
+    {
+        if (($config['after_connect'] ?? null) !== null) {
+            ($config['after_connect'])($this->connection(), $config);
+        }
     }
 
     private function record(string $sql, array $params, float $start, bool $write): float

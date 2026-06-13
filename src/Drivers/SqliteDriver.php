@@ -32,15 +32,8 @@ class SqliteDriver implements DriverInterface
         $this->slowQueryMs = max(1, (int) ($config['slow_query_ms'] ?? 100));
         QueryLogger::setContext('sqlite', $config['pool_name'] ?? '');
         $this->db = new SQLite3((string) $config['database']);
-        $this->db->busyTimeout(max(1, (int) ($config['busy_timeout_ms'] ?? 5000)));
-        $this->db->exec('PRAGMA journal_mode = WAL');
-        $this->db->exec('PRAGMA synchronous = NORMAL');
-        $this->db->exec('PRAGMA foreign_keys = ON');
-        $this->db->exec('PRAGMA temp_store = MEMORY');
-        $this->db->exec('PRAGMA cache_size = ' . (int) ($config['cache_size'] ?? -20000));
-        $this->db->exec('PRAGMA mmap_size = ' . (int) ($config['mmap_size'] ?? 268435456));
-        $this->db->exec('PRAGMA journal_size_limit = ' . (int) ($config['journal_size_limit'] ?? 67108864));
-        $this->db->exec('PRAGMA optimize');
+        $this->applyPragmas($config);
+        $this->runAfterConnect($config);
     }
 
     public function query(string $sql, array $params = []): DriverResult
@@ -133,6 +126,83 @@ class SqliteDriver implements DriverInterface
             throw new \RuntimeException('Database not connected');
         }
         return $this->db;
+    }
+
+    private function applyPragmas(array $config): void
+    {
+        $busyTimeout = $config['busy_timeout_ms'] ?? null;
+        if ($busyTimeout !== null) {
+            $this->connection()->busyTimeout(max(1, (int) $busyTimeout));
+        }
+        $profile = $config['sqlite_profile'] ?? $config['profile'] ?? 'fast';
+        $pragmas = $profile === false || $profile === 'none'
+            ? []
+            : $this->sqlitePragmas((string) $profile, $config);
+        foreach (($config['sqlite_pragmas'] ?? $config['pragmas'] ?? []) as $name => $value) {
+            if ($value === null) {
+                unset($pragmas[$name]);
+                continue;
+            }
+            $pragmas[$name] = $value;
+        }
+        foreach ($pragmas as $name => $value) {
+            if (is_int($name)) {
+                $this->connection()->exec((string) $value);
+                continue;
+            }
+            $this->connection()->exec('PRAGMA ' . $name . ' = ' . $this->pragmaValue($value));
+        }
+        if (($config['sqlite_optimize'] ?? true) !== false) {
+            $this->connection()->exec('PRAGMA optimize');
+        }
+    }
+
+    private function sqlitePragmas(string $profile, array $config): array
+    {
+        return match ($profile) {
+            'safe' => [
+                'journal_mode' => 'WAL',
+                'synchronous' => 'FULL',
+                'foreign_keys' => 'ON',
+                'busy_timeout' => max(1, (int) ($config['busy_timeout_ms'] ?? 5000)),
+            ],
+            'memory' => [
+                'journal_mode' => 'MEMORY',
+                'synchronous' => 'OFF',
+                'foreign_keys' => 'ON',
+                'temp_store' => 'MEMORY',
+                'cache_size' => (int) ($config['cache_size'] ?? -50000),
+                'mmap_size' => (int) ($config['mmap_size'] ?? 536870912),
+            ],
+            default => [
+                'journal_mode' => 'WAL',
+                'synchronous' => 'NORMAL',
+                'foreign_keys' => 'ON',
+                'busy_timeout' => max(1, (int) ($config['busy_timeout_ms'] ?? 5000)),
+                'temp_store' => 'MEMORY',
+                'cache_size' => (int) ($config['cache_size'] ?? -20000),
+                'mmap_size' => (int) ($config['mmap_size'] ?? 268435456),
+                'journal_size_limit' => (int) ($config['journal_size_limit'] ?? 67108864),
+            ],
+        };
+    }
+
+    private function pragmaValue(mixed $value): string
+    {
+        if (is_bool($value)) {
+            return $value ? 'ON' : 'OFF';
+        }
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+        return "'" . str_replace("'", "''", (string) $value) . "'";
+    }
+
+    private function runAfterConnect(array $config): void
+    {
+        if (($config['after_connect'] ?? null) !== null) {
+            ($config['after_connect'])($this->connection(), $config);
+        }
     }
 
     private function prepare(string $sql): \SQLite3Stmt
