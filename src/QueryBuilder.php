@@ -106,13 +106,13 @@ class QueryBuilder
 
     public function limit(int $limit): self
     {
-        $this->limit = $limit;
+        $this->limit = max(0, $limit);
         return $this;
     }
 
     public function offset(int $offset): self
     {
-        $this->offset = $offset;
+        $this->offset = max(0, $offset);
         return $this;
     }
 
@@ -203,7 +203,7 @@ class QueryBuilder
     {
         $columns = array_keys($data);
         $placeholders = array_fill(0, count($columns), '?');
-        $sql = "INSERT INTO `{$this->table}` (`" . implode('`, `', $columns) . "`) VALUES (" . implode(', ', $placeholders) . ")";
+        $sql = "INSERT INTO {$this->quoteIdentifier($this->table)} (" . implode(', ', array_map([$this, 'quoteIdentifier'], $columns)) . ") VALUES (" . implode(', ', $placeholders) . ")";
         return DB::execute($sql, array_values($data), $this->connection);
     }
 
@@ -211,7 +211,7 @@ class QueryBuilder
     {
         $columns = array_keys($data);
         $placeholders = array_fill(0, count($columns), '?');
-        $sql = "INSERT INTO `{$this->table}` (`" . implode('`, `', $columns) . "`) VALUES (" . implode(', ', $placeholders) . ") RETURNING `{$returning}`";
+        $sql = "INSERT INTO {$this->quoteIdentifier($this->table)} (" . implode(', ', array_map([$this, 'quoteIdentifier'], $columns)) . ") VALUES (" . implode(', ', $placeholders) . ") RETURNING {$this->quoteIdentifier($returning)}";
         $result = DB::query($sql, array_values($data), $this->connection);
         if (!empty($result)) {
             return (string) ($result[0][$returning] ?? '');
@@ -227,7 +227,7 @@ class QueryBuilder
         $columns = array_keys($rows[0]);
         $colCount = count($columns);
         $rowPlaceholder = '(' . implode(', ', array_fill(0, $colCount, '?')) . ')';
-        $sql = "INSERT INTO `{$this->table}` (`" . implode('`, `', $columns) . "`) VALUES "
+        $sql = "INSERT INTO {$this->quoteIdentifier($this->table)} (" . implode(', ', array_map([$this, 'quoteIdentifier'], $columns)) . ") VALUES "
             . implode(', ', array_fill(0, count($rows), $rowPlaceholder));
         $bindings = [];
         foreach ($rows as $row) {
@@ -243,8 +243,8 @@ class QueryBuilder
     {
         $columns = array_keys($data);
         $placeholders = array_fill(0, count($columns), '?');
-        $updates = implode(', ', array_map(fn($c) => "`{$c}` = VALUES(`{$c}`)", $updateColumns));
-        $sql = "INSERT INTO `{$this->table}` (`" . implode('`, `', $columns) . "`) VALUES ("
+        $updates = implode(', ', array_map(fn($c) => $this->quoteIdentifier($c) . ' = VALUES(' . $this->quoteIdentifier($c) . ')', $updateColumns));
+        $sql = "INSERT INTO {$this->quoteIdentifier($this->table)} (" . implode(', ', array_map([$this, 'quoteIdentifier'], $columns)) . ") VALUES ("
             . implode(', ', $placeholders) . ") ON DUPLICATE KEY UPDATE {$updates}";
         return DB::execute($sql, array_values($data), $this->connection);
     }
@@ -284,10 +284,10 @@ class QueryBuilder
         $set = [];
         $bindings = [];
         foreach ($data as $column => $value) {
-            $set[] = "`{$column}` = ?";
+            $set[] = $this->quoteIdentifier($column) . " = ?";
             $bindings[] = $value;
         }
-        $sql = "UPDATE `{$this->table}` SET " . implode(', ', $set);
+        $sql = "UPDATE {$this->quoteIdentifier($this->table)} SET " . implode(', ', $set);
         if (!empty($this->where)) {
             $sql .= ' WHERE ' . $this->buildWhere();
             $bindings = array_merge($bindings, $this->bindings);
@@ -297,7 +297,7 @@ class QueryBuilder
 
     public function delete(): bool
     {
-        $sql = "DELETE FROM `{$this->table}`";
+        $sql = "DELETE FROM {$this->quoteIdentifier($this->table)}";
         if (!empty($this->where)) {
             $sql .= ' WHERE ' . $this->buildWhere();
         }
@@ -306,23 +306,24 @@ class QueryBuilder
 
     public function toSql(): string
     {
-        $sql = "SELECT " . implode(', ', $this->select) . " FROM `{$this->table}`";
+        $sql = "SELECT " . implode(', ', array_map([$this, 'quoteSelectable'], $this->select)) . " FROM {$this->quoteIdentifier($this->table)}";
         if (!empty($this->joins)) {
             foreach ($this->joins as $join) {
-                $sql .= " {$join['type']} JOIN `{$join['table']}` ON {$join['first']} {$join['operator']} {$join['second']}";
+                $operator = $this->normalizeOperator($join['operator']);
+                $sql .= " {$join['type']} JOIN {$this->quoteIdentifier($join['table'])} ON {$this->quoteIdentifier($join['first'])} {$operator} {$this->quoteIdentifier($join['second'])}";
             }
         }
         if (!empty($this->where)) {
             $sql .= ' WHERE ' . $this->buildWhere();
         }
         if (!empty($this->groupBy)) {
-            $sql .= ' GROUP BY ' . implode(', ', $this->groupBy);
+            $sql .= ' GROUP BY ' . implode(', ', array_map([$this, 'quoteIdentifier'], $this->groupBy));
         }
         if (!empty($this->having)) {
             $sql .= ' HAVING ' . $this->buildHaving();
         }
         if (!empty($this->orderBy)) {
-            $sql .= ' ORDER BY ' . implode(', ', array_map(fn($o) => "{$o['column']} {$o['direction']}", $this->orderBy));
+            $sql .= ' ORDER BY ' . implode(', ', array_map(fn($o) => $this->quoteIdentifier($o['column']) . " {$o['direction']}", $this->orderBy));
         }
         if ($this->limit !== null) {
             $sql .= " LIMIT {$this->limit}";
@@ -341,7 +342,7 @@ class QueryBuilder
         $parts = [];
         foreach ($this->having as $i => $h) {
             $prefix = $i === 0 ? '' : " {$h['type']} ";
-            $parts[] = $prefix . "{$h['column']} {$h['operator']} ?";
+            $parts[] = $prefix . $this->quoteIdentifier($h['column']) . " {$h['operator']} ?";
         }
         return implode('', $parts);
     }
@@ -362,14 +363,14 @@ class QueryBuilder
             }
             if ($w['operator'] === 'IN') {
                 $placeholders = implode(', ', array_fill(0, count((array) $w['value']), '?'));
-                $conditions[] = $prefix . "`{$w['column']}` IN ({$placeholders})";
+                $conditions[] = $prefix . $this->quoteIdentifier($w['column']) . " IN ({$placeholders})";
                 continue;
             }
             if (in_array($w['operator'], ['IS NULL', 'IS NOT NULL'], true)) {
-                $conditions[] = $prefix . "`{$w['column']}` {$w['operator']}";
+                $conditions[] = $prefix . $this->quoteIdentifier($w['column']) . " {$w['operator']}";
                 continue;
             }
-            $conditions[] = $prefix . "`{$w['column']}` {$w['operator']} ?";
+            $conditions[] = $prefix . $this->quoteIdentifier($w['column']) . " {$w['operator']} ?";
         }
         return implode('', $conditions);
     }
@@ -378,5 +379,27 @@ class QueryBuilder
     {
         $operator = strtoupper(trim($operator));
         return in_array($operator, ['=', '!=', '<>', '>', '>=', '<', '<=', 'LIKE', 'NOT LIKE'], true) ? $operator : '=';
+    }
+
+    private function quoteIdentifier(string $identifier): string
+    {
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/', $identifier)) {
+            throw new \InvalidArgumentException('Invalid SQL identifier');
+        }
+        return implode('.', array_map(fn($part) => "`{$part}`", explode('.', $identifier)));
+    }
+
+    private function quoteSelectable(string $column): string
+    {
+        if ($column === '*') {
+            return '*';
+        }
+        if (preg_match('/^COUNT\(\*\)\s+AS\s+([A-Za-z_][A-Za-z0-9_]*)$/i', $column, $m)) {
+            return 'COUNT(*) AS ' . $this->quoteIdentifier($m[1]);
+        }
+        if (preg_match('/^([A-Za-z_][A-Za-z0-9_.]*)\s+AS\s+([A-Za-z_][A-Za-z0-9_]*)$/i', $column, $m)) {
+            return $this->quoteIdentifier($m[1]) . ' AS ' . $this->quoteIdentifier($m[2]);
+        }
+        return $this->quoteIdentifier($column);
     }
 }
