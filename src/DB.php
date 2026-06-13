@@ -110,6 +110,37 @@ class DB
         return true;
     }
 
+    public static function exec(string|array|callable $command, array $params = [], string $connection = 'default'): mixed
+    {
+        $driver = self::connection($connection);
+        if (is_callable($command)) {
+            return $command($driver->nativeConnection(), $driver);
+        }
+        if (is_array($command)) {
+            $results = [];
+            foreach ($command as $sql => $bindings) {
+                if (is_int($sql)) {
+                    $results[] = $driver->execute((string) $bindings);
+                    continue;
+                }
+                $results[] = $driver->execute((string) $sql, is_array($bindings) ? $bindings : []);
+            }
+            return $results;
+        }
+        return $driver->execute($command, $params);
+    }
+
+    public static function native(string $connection = 'default'): mixed
+    {
+        return self::connection($connection)->nativeConnection();
+    }
+
+    public static function withNative(callable $callback, string $connection = 'default'): mixed
+    {
+        $driver = self::connection($connection);
+        return $callback($driver->nativeConnection(), $driver);
+    }
+
     public static function result(string $sql, array $params = [], string $connection = 'default'): DriverResult
     {
         $driver = self::connection($connection);

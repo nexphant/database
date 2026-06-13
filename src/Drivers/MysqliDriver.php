@@ -86,6 +86,11 @@ class MysqliDriver implements AsyncDriverInterface
         return (string) $this->connection()->insert_id;
     }
 
+    public function nativeConnection(): \mysqli
+    {
+        return $this->connection();
+    }
+
     public function begin(): void
     {
         $this->connection()->begin_transaction();

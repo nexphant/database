@@ -94,6 +94,11 @@ class PgsqlDriver implements AsyncDriverInterface
         return $this->tryLastInsertId() ?? '';
     }
 
+    public function nativeConnection(): mixed
+    {
+        return $this->connection();
+    }
+
     public function begin(): void
     {
         pg_query($this->connection(), 'BEGIN');

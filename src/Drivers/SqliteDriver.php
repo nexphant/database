@@ -51,6 +51,11 @@ class SqliteDriver implements DriverInterface
         return (string) $this->connection()->lastInsertRowID();
     }
 
+    public function nativeConnection(): SQLite3
+    {
+        return $this->connection();
+    }
+
     public function begin(): void
     {
         $this->connection()->exec('BEGIN');

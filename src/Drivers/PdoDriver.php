@@ -64,6 +64,11 @@ class PdoDriver implements DriverInterface
         return (string) $this->connection()->lastInsertId();
     }
 
+    public function nativeConnection(): PDO
+    {
+        return $this->connection();
+    }
+
     public function begin(): void
     {
         $this->connection()->beginTransaction();
