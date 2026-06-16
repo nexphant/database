@@ -8,7 +8,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace nexphant\Database;
+namespace Nexphant\Database;
 
 class QueryLogger
 {
@@ -19,7 +19,7 @@ class QueryLogger
     public static function enable(): void
     {
         self::$enabled = true;
-        self::$logFile = sys_get_temp_dir() . '/nexphant_queries_' . getmypid() . '.json';
+        self::$logFile = sys_get_temp_dir() . '/NEXPHANT_queries_' . getmypid() . '.json';
     }
 
     public static function disable(): void

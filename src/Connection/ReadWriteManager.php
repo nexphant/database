@@ -1,10 +1,10 @@
 <?php
 
-namespace nexphant\Database\Connection;
+namespace Nexphant\Database\Connection;
 
-use nexphant\Database\DB;
-use nexphant\Database\Drivers\DriverInterface;
-use nexphant\Database\Drivers\DriverResult;
+use Nexphant\Database\DB;
+use Nexphant\Database\Drivers\DriverInterface;
+use Nexphant\Database\Drivers\DriverResult;
 
 class ReadWriteManager
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace nexphant\Database\Pool;
+namespace Nexphant\Database\Pool;
 
-use nexphant\Database\Drivers\DriverInterface;
+use Nexphant\Database\Drivers\DriverInterface;
 
 class PoolManager
 {

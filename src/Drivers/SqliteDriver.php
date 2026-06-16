@@ -1,8 +1,8 @@
 <?php
 
-namespace nexphant\Database\Drivers;
+namespace Nexphant\Database\Drivers;
 
-use nexphant\Database\QueryLogger;
+use Nexphant\Database\QueryLogger;
 use SQLite3;
 
 class SqliteDriver implements DriverInterface

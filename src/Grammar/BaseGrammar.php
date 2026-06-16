@@ -1,6 +1,6 @@
 <?php
 
-namespace nexphant\Database\Grammar;
+namespace Nexphant\Database\Grammar;
 
 abstract class BaseGrammar implements DriverGrammar
 {

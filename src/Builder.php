@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace nexphant\Database;
+namespace Nexphant\Database;
 
 /**
  * Ultra-thin builder alias over QueryBuilder.

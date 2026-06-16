@@ -1,4 +1,4 @@
-# nexphant Database
+# Nexphant Database
 
 Database layer for nexphant framework.
 

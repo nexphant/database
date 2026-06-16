@@ -1,9 +1,9 @@
 <?php
 
-namespace nexphant\Database\Drivers;
+namespace Nexphant\Database\Drivers;
 
-use nexphant\Database\QueryLogger;
-use nexphant\Server\Deferred;
+use Nexphant\Database\QueryLogger;
+use Nexphant\Server\Deferred;
 
 class MysqliDriver implements AsyncDriverInterface
 {

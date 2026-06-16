@@ -8,9 +8,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace nexphant\Database;
+namespace Nexphant\Database;
 
-use nexphant\Database\DB;
+use Nexphant\Database\DB;
 
 class Migration
 {

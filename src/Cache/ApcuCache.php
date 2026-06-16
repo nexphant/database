@@ -1,6 +1,6 @@
 <?php
 
-namespace nexphant\Database\Cache;
+namespace Nexphant\Database\Cache;
 
 class ApcuCache
 {

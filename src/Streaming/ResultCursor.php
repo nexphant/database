@@ -1,8 +1,8 @@
 <?php
 
-namespace nexphant\Database\Streaming;
+namespace Nexphant\Database\Streaming;
 
-use nexphant\Database\DB;
+use Nexphant\Database\DB;
 
 class ResultCursor
 {

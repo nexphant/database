@@ -1,9 +1,9 @@
 <?php
 
-namespace nexphant\Database\Transaction;
+namespace Nexphant\Database\Transaction;
 
-use nexphant\Database\DB;
-use nexphant\Database\Drivers\DriverInterface;
+use Nexphant\Database\DB;
+use Nexphant\Database\Drivers\DriverInterface;
 
 class SavepointManager
 {

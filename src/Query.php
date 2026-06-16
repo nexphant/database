@@ -1,5 +1,5 @@
 <?php
-namespace nexphant\Database;
+namespace Nexphant\Database;
 
 class Query extends QueryBuilder
 {

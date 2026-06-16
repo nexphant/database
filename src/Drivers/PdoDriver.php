@@ -1,8 +1,8 @@
 <?php
 
-namespace nexphant\Database\Drivers;
+namespace Nexphant\Database\Drivers;
 
-use nexphant\Database\QueryLogger;
+use Nexphant\Database\QueryLogger;
 use PDO;
 
 class PdoDriver implements DriverInterface

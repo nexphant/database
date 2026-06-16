@@ -1,9 +1,9 @@
 <?php
 
-namespace nexphant\Database\Drivers;
+namespace Nexphant\Database\Drivers;
 
-use nexphant\Database\QueryLogger;
-use nexphant\Server\Deferred;
+use Nexphant\Database\QueryLogger;
+use Nexphant\Server\Deferred;
 
 class PgsqlDriver implements AsyncDriverInterface
 {
@@ -250,7 +250,7 @@ class PgsqlDriver implements AsyncDriverInterface
         }
 
         $this->stats['statement_misses']++;
-        $name = 'nexphant_stmt_' . (++$this->preparedSeq);
+        $name = 'NEXPHANT_stmt_' . (++$this->preparedSeq);
         $result = pg_prepare($this->connection(), $name, $sql);
         if (!$result) {
             throw new \RuntimeException('pg_prepare failed: ' . pg_last_error($this->connection()));

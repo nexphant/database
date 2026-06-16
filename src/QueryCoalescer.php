@@ -1,10 +1,10 @@
 <?php
 
-namespace nexphant\Database;
+namespace Nexphant\Database;
 
 use Fiber;
-use nexphant\Database\Drivers\DriverResult;
-use nexphant\Runtime\Runtime;
+use Nexphant\Database\Drivers\DriverResult;
+use Nexphant\Runtime\Runtime;
 use Throwable;
 
 final class QueryCoalescer

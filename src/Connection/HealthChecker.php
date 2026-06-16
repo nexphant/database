@@ -1,8 +1,8 @@
 <?php
 
-namespace nexphant\Database\Connection;
+namespace Nexphant\Database\Connection;
 
-use nexphant\Database\Drivers\DriverInterface;
+use Nexphant\Database\Drivers\DriverInterface;
 
 class HealthChecker
 {
@@ -34,11 +34,11 @@ class HealthChecker
     public static function checkAndReconnect(string $name = 'default'): bool
     {
         try {
-            $conn = \nexphant\Database\DB::connection($name);
+            $conn = \Nexphant\Database\DB::connection($name);
             if (self::check($conn, $name)) {
                 return true;
             }
-            \nexphant\Database\DB::reconnect($name);
+            \Nexphant\Database\DB::reconnect($name);
             return true;
         } catch (\Throwable) {
             return false;

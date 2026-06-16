@@ -1,6 +1,6 @@
 <?php
 
-namespace nexphant\Database\Drivers;
+namespace Nexphant\Database\Drivers;
 
 interface AsyncDriverInterface extends DriverInterface
 {

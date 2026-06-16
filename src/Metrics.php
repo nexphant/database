@@ -1,6 +1,6 @@
 <?php
 
-namespace nexphant\Database;
+namespace Nexphant\Database;
 
 class Metrics
 {

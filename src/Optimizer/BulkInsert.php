@@ -1,9 +1,9 @@
 <?php
 
-namespace nexphant\Database\Optimizer;
+namespace Nexphant\Database\Optimizer;
 
-use nexphant\Database\DB;
-use nexphant\Database\Grammar\DriverGrammar;
+use Nexphant\Database\DB;
+use Nexphant\Database\Grammar\DriverGrammar;
 
 class BulkInsert
 {
