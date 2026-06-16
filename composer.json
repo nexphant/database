@@ -1,6 +1,6 @@
 {
     "name": "nexphant/database",
-    "description": "Database layer for nexphant framework",
+    "description": "Database layer for Nexphant framework",
     "type": "library",
     "license": "MIT",
     "autoload": {
