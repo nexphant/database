@@ -1,12 +1,12 @@
 <?php
 
-namespace Nexph\Database;
+namespace nexphant\Database;
 
-use Nexph\Database\Drivers\DriverFactory;
-use Nexph\Database\Drivers\DriverInterface;
-use Nexph\Database\Drivers\DriverResult;
-use Nexph\Database\Drivers\PdoDriver;
-use Nexph\Database\Pool\PoolManager;
+use nexphant\Database\Drivers\DriverFactory;
+use nexphant\Database\Drivers\DriverInterface;
+use nexphant\Database\Drivers\DriverResult;
+use nexphant\Database\Drivers\PdoDriver;
+use nexphant\Database\Pool\PoolManager;
 
 class DB
 {

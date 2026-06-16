@@ -1,16 +1,16 @@
 <?php
 
 /**
- * This file is part of the Nexph Framework.
+ * This file is part of the nexphant Framework.
  *
  * (c) nexphant <https://github.com/nexphant>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace Nexph\Database;
+namespace nexphant\Database;
 
-use Nexph\Database\DB;
+use nexphant\Database\DB;
 
 class Migration
 {

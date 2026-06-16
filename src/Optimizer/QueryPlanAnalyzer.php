@@ -1,8 +1,8 @@
 <?php
 
-namespace Nexph\Database\Optimizer;
+namespace nexphant\Database\Optimizer;
 
-use Nexph\Database\DB;
+use nexphant\Database\DB;
 
 class QueryPlanAnalyzer
 {

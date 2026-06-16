@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexph\Database\Drivers;
+namespace nexphant\Database\Drivers;
 
 interface DriverInterface
 {

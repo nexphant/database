@@ -1,9 +1,9 @@
 <?php
 
-namespace Nexph\Database\Pool;
+namespace nexphant\Database\Pool;
 
-use Nexph\Database\DB;
-use Nexph\Database\Drivers\DriverInterface;
+use nexphant\Database\DB;
+use nexphant\Database\Drivers\DriverInterface;
 
 class ConnectionPool
 {
@@ -208,11 +208,11 @@ class ConnectionPool
         $this->active[spl_object_id($conn)] = $entry;
         
         // Track connection with resource registry
-        if (class_exists('\Nexph\Core\Resource\ResourceRegistry') && class_exists('\Nexph\Runtime\Runtime') && \Nexph\Runtime\Runtime::available()) {
-            \Nexph\Core\Resource\ResourceRegistry::instance()->track(
+        if (class_exists('\nexphant\Core\Resource\ResourceRegistry') && class_exists('\nexphant\Runtime\Runtime') && \nexphant\Runtime\Runtime::available()) {
+            \nexphant\Core\Resource\ResourceRegistry::instance()->track(
                 $conn,
                 'db_connection',
-                \Nexph\Runtime\Runtime::context()->ownerId()
+                \nexphant\Runtime\Runtime::context()->ownerId()
             );
         }
         

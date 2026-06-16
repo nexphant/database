@@ -1,5 +1,5 @@
 <?php
-namespace Nexph\Database;
+namespace nexphant\Database;
 
 class Schema extends Builder
 {

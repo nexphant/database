@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexph\Database\Cache;
+namespace nexphant\Database\Cache;
 
 class RedisCache
 {
@@ -22,11 +22,11 @@ class RedisCache
         }
         
         // Track Redis connection
-        if (class_exists('\Nexph\Core\Resource\ResourceRegistry') && class_exists('\Nexph\Runtime\Runtime') && \Nexph\Runtime\Runtime::available()) {
-            \Nexph\Core\Resource\ResourceRegistry::instance()->track(
+        if (class_exists('\nexphant\Core\Resource\ResourceRegistry') && class_exists('\nexphant\Runtime\Runtime') && \nexphant\Runtime\Runtime::available()) {
+            \nexphant\Core\Resource\ResourceRegistry::instance()->track(
                 $this->redis,
                 'redis_connection',
-                \Nexph\Runtime\Runtime::context()->ownerId()
+                \nexphant\Runtime\Runtime::context()->ownerId()
             );
         }
     }

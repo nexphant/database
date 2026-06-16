@@ -1,11 +1,11 @@
-# Nexph Database
+# nexphant Database
 
-Database layer for Nexph framework.
+Database layer for nexphant framework.
 
 ## Installation
 
 ```bash
-composer require nexph/database
+composer require nexphant/database
 ```
 
 ## License

@@ -1,10 +1,10 @@
 <?php
 
-namespace Nexph\Database;
+namespace nexphant\Database;
 
 use Fiber;
-use Nexph\Database\Drivers\DriverResult;
-use Nexph\Runtime\Runtime;
+use nexphant\Database\Drivers\DriverResult;
+use nexphant\Runtime\Runtime;
 use Throwable;
 
 final class QueryCoalescer
@@ -124,7 +124,7 @@ final class QueryCoalescer
         self::$cache = [];
         self::$stats['in_flight'] = 0;
         if (function_exists('apcu_inc')) {
-            apcu_inc('nexph:query:version', 1, $ok, 1);
+            apcu_inc('nexphant:query:version', 1, $ok, 1);
         }
     }
 
@@ -189,7 +189,7 @@ final class QueryCoalescer
             if (!function_exists('apcu_fetch')) {
                 return null;
             }
-            $cached = apcu_fetch('nexph:query:' . $key, $hit);
+            $cached = apcu_fetch('nexphant:query:' . $key, $hit);
             if (!$hit || !$cached instanceof DriverResult) {
                 return null;
             }
@@ -214,7 +214,7 @@ final class QueryCoalescer
             'result' => $copy,
         ];
         if (function_exists('apcu_store')) {
-            apcu_store('nexph:query:' . $key, $copy, (int) max(1, ceil($ttl)));
+            apcu_store('nexphant:query:' . $key, $copy, (int) max(1, ceil($ttl)));
         }
     }
 
@@ -223,7 +223,7 @@ final class QueryCoalescer
         if (!function_exists('apcu_fetch')) {
             return 1;
         }
-        return (int) (apcu_fetch('nexph:query:version') ?: 1);
+        return (int) (apcu_fetch('nexphant:query:version') ?: 1);
     }
 
     private static function pruneCache(): void

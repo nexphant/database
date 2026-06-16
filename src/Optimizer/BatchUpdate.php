@@ -1,9 +1,9 @@
 <?php
 
-namespace Nexph\Database\Optimizer;
+namespace nexphant\Database\Optimizer;
 
-use Nexph\Database\DB;
-use Nexph\Database\Grammar\DriverGrammar;
+use nexphant\Database\DB;
+use nexphant\Database\Grammar\DriverGrammar;
 
 class BatchUpdate
 {

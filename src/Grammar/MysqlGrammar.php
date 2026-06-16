@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexph\Database\Grammar;
+namespace nexphant\Database\Grammar;
 
 class MysqlGrammar extends BaseGrammar
 {

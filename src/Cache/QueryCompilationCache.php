@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexph\Database\Cache;
+namespace nexphant\Database\Cache;
 
 class QueryCompilationCache
 {

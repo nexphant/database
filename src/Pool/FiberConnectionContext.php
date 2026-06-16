@@ -1,9 +1,9 @@
 <?php
 
-namespace Nexph\Database\Pool;
+namespace nexphant\Database\Pool;
 
 use Fiber;
-use Nexph\Database\Drivers\DriverInterface;
+use nexphant\Database\Drivers\DriverInterface;
 
 class FiberConnectionContext
 {

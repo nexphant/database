@@ -1,8 +1,8 @@
 <?php
 
-namespace Nexph\Database\Connection;
+namespace nexphant\Database\Connection;
 
-use Nexph\Database\DB;
+use nexphant\Database\DB;
 
 class AutoReconnect
 {

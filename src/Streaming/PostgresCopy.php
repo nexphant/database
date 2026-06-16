@@ -1,8 +1,8 @@
 <?php
 
-namespace Nexph\Database\Streaming;
+namespace nexphant\Database\Streaming;
 
-use Nexph\Database\DB;
+use nexphant\Database\DB;
 
 class PostgresCopy
 {

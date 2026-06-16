@@ -1,8 +1,8 @@
 <?php
 
-namespace Nexph\Database\Streaming;
+namespace nexphant\Database\Streaming;
 
-use Nexph\Database\DB;
+use nexphant\Database\DB;
 
 class MysqlLoadData
 {
@@ -45,7 +45,7 @@ class MysqlLoadData
         string $connection = 'default',
         int $chunkSize = 5000,
     ): int {
-        $tmpFile = tempnam(sys_get_temp_dir(), 'nexph_load_');
+        $tmpFile = tempnam(sys_get_temp_dir(), 'nexphant_load_');
         if (!$tmpFile) {
             throw new \RuntimeException('Failed to create temp file');
         }

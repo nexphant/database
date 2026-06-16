@@ -1,5 +1,5 @@
 <?php
-namespace Nexph\Database;
+namespace nexphant\Database;
 
 class Dialect extends Grammar
 {

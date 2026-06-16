@@ -1,11 +1,11 @@
 <?php
 
-namespace Nexph\Database\Cache;
+namespace nexphant\Database\Cache;
 
 class DistributedQueryCache
 {
     private static ?object $driver = null;
-    private static string $prefix = 'nexph:qcache:';
+    private static string $prefix = 'nexphant:qcache:';
     private static float $defaultTtl = 60.0;
     private static int $hits = 0;
     private static int $misses = 0;
@@ -13,7 +13,7 @@ class DistributedQueryCache
     public static function configure(array $config): void
     {
         $type = $config['driver'] ?? 'apcu';
-        self::$prefix = $config['prefix'] ?? 'nexph:qcache:';
+        self::$prefix = $config['prefix'] ?? 'nexphant:qcache:';
         self::$defaultTtl = (float) ($config['ttl'] ?? 60.0);
 
         self::$driver = match ($type) {

@@ -1,18 +1,18 @@
 {
-    "name": "nexph/database",
-    "description": "Database layer for Nexph framework",
+    "name": "nexphant/database",
+    "description": "Database layer for nexphant framework",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Nexph\\Database\\": "src/"
+            "nexphant\\Database\\": "src/"
         }
     },
     "require": {
         "php": ">=8.1",
         "ext-pdo": "*",
-        "nexph/core": "^0.0",
-        "nexph/support": "^0.0"
+        "nexphant/core": "^0.0",
+        "nexphant/support": "^0.0"
     },
     "suggest": {
         "ext-mysqli": "For native MySQL async driver",
