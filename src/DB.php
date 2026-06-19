@@ -67,6 +67,9 @@ class DB
     public static function reconnect(?string $name = null): void
     {
         if ($name === null) {
+            foreach (self::$drivers as $driver) {
+                $driver->close();
+            }
             $configs = self::$configs;
             self::$drivers = [];
             foreach ($configs as $n => $config) {
@@ -75,6 +78,7 @@ class DB
             return;
         }
         if (isset(self::$drivers[$name])) {
+            self::$drivers[$name]->close();
             unset(self::$drivers[$name]);
         }
         if (isset(self::$configs[$name])) {

@@ -10,7 +10,9 @@ class PdoDriver implements DriverInterface
     private ?PDO $pdo = null;
     private array $config = [];
     private array $statementCache = [];
+    private array $statementCacheTimes = [];
     private int $statementCacheSize = 128;
+    private int $statementCacheTtl = 3600;
     private int $slowQueryMs = 100;
     private array $stats = [
         'queries' => 0,
@@ -29,6 +31,7 @@ class PdoDriver implements DriverInterface
     {
         $this->config = $config;
         $this->statementCacheSize = max(0, (int) ($config['statement_cache_size'] ?? 128));
+        $this->statementCacheTtl = max(1, (int) ($config['statement_cache_ttl'] ?? 3600));
         $this->slowQueryMs = max(1, (int) ($config['slow_query_ms'] ?? 100));
         $this->pdo = new PDO($this->dsn($config), $config['username'] ?? null, $config['password'] ?? null, $this->options($config));
         $this->configure();
@@ -90,6 +93,7 @@ class PdoDriver implements DriverInterface
     {
         $this->pdo = null;
         $this->statementCache = [];
+        $this->statementCacheTimes = [];
     }
 
     public function stats(): array
@@ -132,17 +136,23 @@ class PdoDriver implements DriverInterface
     private function prepare(string $sql): \PDOStatement
     {
         $key = sha1($sql);
+        $now = time();
         if (isset($this->statementCache[$key])) {
-            $this->stats['statement_hits']++;
-            return $this->statementCache[$key];
+            if ($now - $this->statementCacheTimes[$key] < $this->statementCacheTtl) {
+                $this->stats['statement_hits']++;
+                return $this->statementCache[$key];
+            }
+            unset($this->statementCache[$key], $this->statementCacheTimes[$key]);
         }
         $this->stats['statement_misses']++;
         $stmt = $this->connection()->prepare($sql);
         if ($this->statementCacheSize > 0) {
             if (count($this->statementCache) >= $this->statementCacheSize) {
-                array_shift($this->statementCache);
+                $oldestKey = array_key_first($this->statementCache);
+                unset($this->statementCache[$oldestKey], $this->statementCacheTimes[$oldestKey]);
             }
             $this->statementCache[$key] = $stmt;
+            $this->statementCacheTimes[$key] = $now;
         }
         return $stmt;
     }

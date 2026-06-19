@@ -87,18 +87,27 @@ class QueryBuilder
 
     public function join(string $table, string $first, string $operator, string $second): self
     {
+        if (count($this->joins) >= 20) {
+            throw new \RuntimeException('Maximum of 20 joins exceeded');
+        }
         $this->joins[] = ['type' => 'INNER', 'table' => $table, 'first' => $first, 'operator' => $operator, 'second' => $second];
         return $this;
     }
 
     public function leftJoin(string $table, string $first, string $operator, string $second): self
     {
+        if (count($this->joins) >= 20) {
+            throw new \RuntimeException('Maximum of 20 joins exceeded');
+        }
         $this->joins[] = ['type' => 'LEFT', 'table' => $table, 'first' => $first, 'operator' => $operator, 'second' => $second];
         return $this;
     }
 
     public function orderBy(string $column, string $direction = 'ASC'): self
     {
+        if (count($this->orderBy) >= 20) {
+            throw new \RuntimeException('Maximum of 20 orderBy clauses exceeded');
+        }
         $direction = strtoupper($direction);
         $this->orderBy[] = ['column' => $column, 'direction' => in_array($direction, ['ASC', 'DESC'], true) ? $direction : 'ASC'];
         return $this;
