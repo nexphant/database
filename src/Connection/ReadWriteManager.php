@@ -74,11 +74,13 @@ class ReadWriteManager
 
     public static function closeAll(): void
     {
-        foreach (self::$writers as $conn) {
+        foreach (self::$writers as $name => $conn) {
             $conn->close();
+            unset(self::$writers[$name]);
         }
-        foreach (self::$readers as $conn) {
+        foreach (self::$readers as $name => $conn) {
             $conn->close();
+            unset(self::$readers[$name]);
         }
         self::$writers = [];
         self::$readers = [];
