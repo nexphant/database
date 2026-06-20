@@ -8,6 +8,7 @@ class Metrics
     private static array $perPool = [];
     private static array $slowQueries = [];
     private static int $slowQueryLimit = 100;
+    private static int $slowQueryHead = 0;
     private static float $slowThresholdMs = 100.0;
 
     public static function configure(float $slowThresholdMs = 100.0, int $slowQueryLimit = 100): void
@@ -41,8 +42,14 @@ class Metrics
                 'duration_ms' => $durationMs,
                 'at' => microtime(true),
             ];
-            if (count(self::$slowQueries) > self::$slowQueryLimit) {
-                array_shift(self::$slowQueries);
+            
+            $count = count(self::$slowQueries) - self::$slowQueryHead;
+            if ($count > self::$slowQueryLimit) {
+                self::$slowQueryHead++;
+                if (self::$slowQueryHead > 50) {
+                    self::$slowQueries = array_slice(self::$slowQueries, self::$slowQueryHead);
+                    self::$slowQueryHead = 0;
+                }
             }
         }
     }
@@ -65,7 +72,9 @@ class Metrics
 
     public static function slowQueries(): array
     {
-        return self::$slowQueries;
+        return self::$slowQueryHead === 0 
+            ? self::$slowQueries 
+            : array_slice(self::$slowQueries, self::$slowQueryHead);
     }
 
     public static function slowQueryAnalysis(): array
@@ -115,6 +124,7 @@ class Metrics
         self::$perDriver = [];
         self::$perPool = [];
         self::$slowQueries = [];
+        self::$slowQueryHead = 0;
     }
 
     public static function all(): array

@@ -13,6 +13,7 @@ namespace Nexphant\Database;
 class QueryLogger
 {
     private static array $queries = [];
+    private static int $maxQueries = 1000;
     private static bool $enabled = false;
     private static string $logFile = '';
 
@@ -69,6 +70,10 @@ class QueryLogger
         ];
 
         self::$queries[] = $entry;
+        
+        if (count(self::$queries) > self::$maxQueries) {
+            array_shift(self::$queries);
+        }
 
         if (self::$logFile) {
             $existing = [];

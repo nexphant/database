@@ -14,6 +14,7 @@ final class QueryCoalescer
     private static float $waitTimeoutMs = 5000.0;
     private static array $inFlight = [];
     private static array $cache = [];
+    private static int $maxCacheEntries = 1000;
     private static array $stats = [
         'coalesced' => 0,
         'db_hits' => 0,
@@ -85,6 +86,7 @@ final class QueryCoalescer
             return $result;
         } catch (Throwable $e) {
             self::$inFlight[$key]['error'] = $e;
+            self::$inFlight[$key]['done'] = true;
             throw $e;
         } finally {
             if (isset(self::$inFlight[$key])) {
@@ -233,6 +235,11 @@ final class QueryCoalescer
             if ($entry['expires'] < $now) {
                 unset(self::$cache[$key]);
             }
+        }
+        
+        if (count(self::$cache) > self::$maxCacheEntries) {
+            uasort(self::$cache, fn($a, $b) => $b['expires'] <=> $a['expires']);
+            self::$cache = array_slice(self::$cache, 0, self::$maxCacheEntries, true);
         }
     }
 
