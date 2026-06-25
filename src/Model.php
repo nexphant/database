@@ -111,9 +111,19 @@ abstract class Model
     public function save(): int|string
     {
         $data = $this->toArray();
-        return DB::table(static::getTable())
+        $pk   = static::$primaryKey;
+        // Remove PK if zero/null so DB auto-assigns it
+        if (isset($data[$pk]) && (int) $data[$pk] === 0) {
+            unset($data[$pk]);
+        }
+        $id = DB::table(static::getTable())
             ->connection(static::$connection)
-            ->insert($data);
+            ->insertGetId($data);
+        // Reflect new ID back onto model
+        if ($id && property_exists($this, $pk)) {
+            $this->{$pk} = (int) $id;
+        }
+        return $id;
     }
 
     /**
